@@ -19,14 +19,14 @@ import (
 	"crypto/tls"
 	"net"
 
-	"github.com/lucas-clemente/quic-go"
+	"github.com/quic-go/quic-go"
 	"inet.af/netaddr"
 )
 
 // closerListener is a wrapper around quic.Listener that always closes the
 // underlying conn when closing the session.
 type closerListener struct {
-	quic.Listener
+	*quic.Listener
 	conn net.PacketConn
 }
 
@@ -40,11 +40,11 @@ func (l closerListener) Close() error {
 //
 // See note on wildcard addresses in the package documentation.
 func ListenQUIC(ctx context.Context, local netaddr.IPPort, selector ReplySelector,
-	tlsConf *tls.Config, quicConfig *quic.Config) (quic.Listener, error) {
+	tlsConf *tls.Config, quicConfig *quic.Config) (closerListener, error) {
 
 	conn, err := ListenUDP(ctx, local, selector)
 	if err != nil {
-		return nil, err
+		return closerListener{}, err
 	}
 	// HACK: we silence the log here to shut up quic-go's warning about trying to
 	// set receive buffer size (it's not a UDPConn, we know).
@@ -53,7 +53,7 @@ func ListenQUIC(ctx context.Context, local netaddr.IPPort, selector ReplySelecto
 	listener, err := quic.Listen(conn, tlsConf, quicConfig)
 	if err != nil {
 		conn.Close()
-		return nil, err
+		return closerListener{}, err
 	}
 	return closerListener{
 		Listener: listener,

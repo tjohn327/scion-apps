@@ -22,7 +22,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/lucas-clemente/quic-go"
+	"github.com/quic-go/quic-go"
 )
 
 var (
@@ -33,7 +33,7 @@ var (
 	// This is more fiddly than perhaps expected because quic-go does not _currently_
 	// have any API that allows to wait until the send buffer is drained and save
 	// shutdown (of the UDP socket, or the application) is possible.
-	// See https://github.com/lucas-clemente/quic-go/issues/3291.
+	// See https://github.com/quic-go/quic-go/issues/3291.
 	// TODO: simplify this once possible (as a protocol breaking change)
 	//
 	// The "protocol" is:
@@ -65,12 +65,12 @@ func (l SingleStreamListener) Accept() (net.Conn, error) {
 // intending to be a drop-in replacement for TCP.
 // A SingleStream is either created by
 //
-//  - on the client side: quic.Dial and then immediately NewSingleStream(sess)
-//    with the obtained session
-//  - on the listener side: quic.Listener wrapped in SingleStreamListener, which
-//    returns SingleStream from Accept.
+//   - on the client side: quic.Dial and then immediately NewSingleStream(sess)
+//     with the obtained session
+//   - on the listener side: quic.Listener wrapped in SingleStreamListener, which
+//     returns SingleStream from Accept.
 type SingleStream struct {
-	Session       quic.Session
+	Session       quic.Connection
 	sendStream    quic.SendStream
 	receiveStream quic.ReceiveStream
 	readDeadline  time.Time
@@ -78,7 +78,7 @@ type SingleStream struct {
 	onceOK        sync.Once
 }
 
-func NewSingleStream(session quic.Session) (*SingleStream, error) {
+func NewSingleStream(session quic.Connection) (*SingleStream, error) {
 	sendStream, err := session.OpenUniStream()
 	if err != nil {
 		return nil, err

@@ -18,7 +18,7 @@ import (
 	"context"
 	"crypto/tls"
 
-	"github.com/lucas-clemente/quic-go"
+	"github.com/quic-go/quic-go"
 	"golang.org/x/crypto/ssh"
 	"inet.af/netaddr"
 

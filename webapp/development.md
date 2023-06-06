@@ -71,7 +71,7 @@ Add alternate test forwarding port line in `Vagrantfile`:
   config.vm.network "forwarded_port", guest: 8080, host: 8080, protocol: "tcp"
 ```
 
-Install Go 1.16 (see e.g. https://github.com/golang/go/wiki/Ubuntu).
+Install go 1.20 (see e.g. https://github.com/golang/go/wiki/Ubuntu).
 
 Build and install `scion-apps`:
 ```shell

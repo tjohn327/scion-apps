@@ -19,31 +19,31 @@ import (
 	"crypto/tls"
 	"net"
 
-	"github.com/lucas-clemente/quic-go"
+	"github.com/quic-go/quic-go"
 	"inet.af/netaddr"
 )
 
-// QUICSession is a wrapper around quic.Session that always closes the
+// QUICSession is a wrapper around quic.Connection that always closes the
 // underlying conn when closing the session.
 type QUICSession struct {
-	quic.Session
+	quic.Connection
 	Conn Conn
 }
 
 func (s *QUICSession) CloseWithError(code quic.ApplicationErrorCode, desc string) error {
-	err := s.Session.CloseWithError(code, desc)
+	err := s.Connection.CloseWithError(code, desc)
 	s.Conn.Close()
 	return err
 }
 
 // QUICEarlySession is a wrapper around quic.EarlySession, analogous to closerSession
 type QUICEarlySession struct {
-	quic.EarlySession
+	quic.EarlyConnection
 	Conn Conn
 }
 
 func (s *QUICEarlySession) CloseWithError(code quic.ApplicationErrorCode, desc string) error {
-	err := s.EarlySession.CloseWithError(code, desc)
+	err := s.EarlyConnection.CloseWithError(code, desc)
 	s.Conn.Close()
 	return err
 }
@@ -65,7 +65,7 @@ func DialQUIC(ctx context.Context,
 	// set receive buffer size (it's not a UDPConn, we know).
 	silenceLog()
 	defer unsilenceLog()
-	session, err := quic.DialContext(ctx, pconn, remote, host, tlsConf, quicConf)
+	session, err := quic.Dial(ctx, pconn, remote, tlsConf, quicConf)
 	if err != nil {
 		return nil, err
 	}
@@ -86,7 +86,7 @@ func DialQUICEarly(ctx context.Context,
 	// set receive buffer size (it's not a UDPConn, we know).
 	silenceLog()
 	defer unsilenceLog()
-	session, err := quic.DialEarlyContext(ctx, pconn, remote, host, tlsConf, quicConf)
+	session, err := quic.DialEarly(ctx, pconn, remote, tlsConf, quicConf)
 	if err != nil {
 		return nil, err
 	}
