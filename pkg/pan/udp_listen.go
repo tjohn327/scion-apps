@@ -177,6 +177,27 @@ func (s *DefaultReplySelector) Record(remote UDPAddr, path *Path) {
 	s.remotes[remote] = r
 }
 
+func queryPaths(ctx context.Context, dstIA IA) ([]*Path, error) {
+	paths, err := host().queryPaths(ctx, dstIA)
+	if err != nil {
+		return nil, err
+	}
+	return paths, nil
+}
+
+func (s *DefaultReplySelector) RecordPathsToRemote(remote UDPAddr) {
+	paths, err := queryPaths(context.Background(), remote.IA)
+	if err != nil {
+		return
+	}
+	s.mtx.Lock()
+	defer s.mtx.Unlock()
+	r := s.remotes[remote]
+	r.seen = time.Now()
+	r.paths = paths
+	s.remotes[remote] = r
+}
+
 func (s *DefaultReplySelector) PathDown(PathFingerprint, PathInterface) {
 	// TODO failover.
 }
